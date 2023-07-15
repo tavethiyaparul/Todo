@@ -100,7 +100,7 @@ export const login = async (req, res, next) => {
         })
       );
     } else {
-      console.error("Error creating Location:", error);
+      console.error("Error login Location:", error);
       return res.status(500).json(responses.SERVER_ERROR());
     }
   }

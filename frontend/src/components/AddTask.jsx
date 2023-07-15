@@ -12,14 +12,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  IconButton,
 } from "@mui/material";
 import { Get_All, Post_All } from "../basicfunction/allApiFunction";
-
+import CloseIcon from "@mui/icons-material/Close";
 const AddTask = (props) => {
-  console.log("props", props);
-  const [open, setOpen] = useState(true);
-  const [tasks, setTasks] = useState([]);
-
   const [formData, setFormData] = useState({
     id: props.id ? props.id : "",
     title: "",
@@ -29,25 +27,73 @@ const AddTask = (props) => {
     status: "",
   });
 
+  const [formErrors, setFormErrors] = useState({
+    title: "",
+    duedate: "",
+    priority: "",
+    status: "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // set snack msg
+  const [snackMsg, setSnackMsg] = useState({
+    message: "",
+    msgColor: "",
+  });
+  // snackbar open close
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
+  const action = (
+    <div>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleCloseSnackbar}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </div>
+  );
+
   const handleChange = (event) => {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
     });
+    setFormErrors({
+      ...formErrors,
+      [event.target.name]: "",
+    });
+  };
+
+  const handleEvent = (event) => {
+    setIsSubmitting(true);
   };
   const handleSubmit = async () => {
-    props.modalaction();
-    console.log("from data", formData);
     await Post_All("/api/task", formData)
       .then((res) => {
-        console.log("response: " + JSON.stringify(res));
-        if (res.status != 200) {
-          // setSnackMsg({message:JSON.stringify(res.message),msgColor:"red"});
-          // setOpen(true);
+        // console.log("response: " + JSON.stringify(res));
+        if (res.status !== 200) {
+          setSnackMsg({
+            message: JSON.stringify(res.message),
+            msgColor: "red",
+          });
+          setOpenSnackbar(true);
         } else {
+          setSnackMsg({
+            message: JSON.stringify(res.message),
+            msgColor: "green",
+          });
+          setOpenSnackbar(true);
           props.modalClose();
-          // setSnackMsg({message:JSON.stringify(res.message),msgColor:"green"});
-          // setOpen(true);
         }
       })
       .catch((error) => {
@@ -74,12 +120,12 @@ const AddTask = (props) => {
       await Get_All(`/api/task/${props.id}`)
         .then((res) => {
           // console.log("response: " + JSON.stringify(res));
-          if (res.status != 200) {
-            // setSnackMsg({
-            //   message: JSON.stringify(res?.message),
-            //   msgColor: "red",
-            // });
-            // setOpen(true);
+          if (res.status !== 200) {
+            setSnackMsg({
+              message: JSON.stringify(res?.message),
+              msgColor: "red",
+            });
+            setOpenSnackbar(true);
           } else {
             setFormData({
               id: props?.id ?? "",
@@ -99,17 +145,60 @@ const AddTask = (props) => {
   };
 
   useEffect(() => {
+    const validateForm = () => {
+      let errors = {};
+      let isValid = true;
+
+      // Title validation
+      if (!formData.title.trim()) {
+        errors.title = "Title is required";
+        isValid = false;
+      }
+
+      // priority validation
+      if (!formData.priority.trim()) {
+        errors.priority = "Priority is required";
+        isValid = false;
+      }
+
+      // Password validation
+      if (!formData.duedate.trim()) {
+        errors.duedate = "Due Date is required";
+        isValid = false;
+      }
+
+      // Password validation
+      if (!formData.status.trim()) {
+        errors.status = "Status is required";
+        isValid = false;
+      }
+
+      setFormErrors(errors);
+      return isValid;
+    };
+
+    if (isSubmitting) {
+      const isValid = validateForm();
+
+      if (isValid) {
+        handleSubmit();
+      }
+
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, formData]);
+  useEffect(() => {
     getTaskId();
   }, []);
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={true} onClose={handleClose}>
         <DialogTitle>{props.title}</DialogTitle>
         <DialogContent>
           <Container maxWidth="md">
             {/* create */}
-            <Box component="form" sx={{ mt: 2 }} onSubmit={handleSubmit}>
+            <Box component="form" sx={{ mt: 2 }}>
               <TextField
                 required
                 autoFocus
@@ -118,6 +207,8 @@ const AddTask = (props) => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                error={!!formErrors.title}
+                helperText={formErrors.title}
               />
               <br />
               <br />
@@ -145,6 +236,8 @@ const AddTask = (props) => {
                 inputProps={{
                   min: new Date().toISOString().split("T")[0],
                 }}
+                error={!!formErrors.duedate}
+                helperText={formErrors.duedate}
               />
               <br />
               <br />
@@ -157,6 +250,8 @@ const AddTask = (props) => {
                   name="priority"
                   value={formData.priority}
                   onChange={handleChange}
+                  error={!!formErrors.priority}
+                  helperText={formErrors.priority}
                 >
                   <MenuItem value="3">Low</MenuItem>
                   <MenuItem value="2">Medium</MenuItem>
@@ -173,6 +268,8 @@ const AddTask = (props) => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
+                  error={!!formErrors.status}
+                  helperText={formErrors.status}
                 >
                   <MenuItem value="pending">Pending</MenuItem>
                   <MenuItem value="in progress">In Progress</MenuItem>
@@ -186,10 +283,25 @@ const AddTask = (props) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>
-            {formData.id ? "Edit" : "Save"}
-          </Button>
+          <Button onClick={handleEvent}>{props?.id ? "Edit" : "Save"}</Button>
         </DialogActions>
+        <Box>
+          <div>
+            <Snackbar
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={handleCloseSnackbar}
+              ContentProps={{
+                sx: {
+                  background: `${snackMsg.msgColor}`,
+                },
+              }}
+              message={snackMsg.message}
+              action={action}
+            />
+          </div>
+        </Box>
       </Dialog>
     </>
   );

@@ -4,7 +4,6 @@ import responses from "../constants/responses.js";
 
 export const isAuthentication = async (req, res, next) => {
   try {
-    console.log("req", req.cookies);
     const { token } = req.cookies;
     if (!token) {
       return res.status(401).json(responses.UNAUTHORIZED());

@@ -80,7 +80,7 @@ export const createTask = async (req, res, next) => {
 
 export const getTask = async (req, res, next) => {
   try {
-    const taskCount = await Task.find().countDocuments();
+    const taskCount = await Task.find({ user: req.user.id }).countDocuments();
     const apiFeature = new ApiFeatures(
       Task.find({ user: req.user.id }),
       req.query
@@ -107,7 +107,7 @@ export const getTask = async (req, res, next) => {
       })
     );
   } catch (error) {
-    console.error("Error creating Location:", error);
+    console.error("Error getTask Location:", error);
     return res.status(500).json(responses.SERVER_ERROR());
   }
 };
@@ -135,7 +135,7 @@ export const getTaskWiseId = async (req, res, next) => {
       );
     }
   } catch (error) {
-    console.error("Error creating Location:", error);
+    console.error("Error getTaskWiseId Location:", error);
     return res.status(500).json(responses.SERVER_ERROR());
   }
 };
@@ -162,7 +162,7 @@ export const deleteTask = async (req, res, next) => {
       );
     }
   } catch (error) {
-    console.error("Error creating Location:", error);
+    console.error("Error deleteTask Location:", error);
     return res.status(500).json(responses.SERVER_ERROR());
   }
 };

@@ -65,12 +65,14 @@ const Login = () => {
     </div>
   );
 
+  const handleEvent = (event) => {
+    setIsSubmitting(true)
+}
   const login = async () => {
-    setIsSubmitting(true);
     await Post_All("/api/user/login", formData)
       .then((res) => {
         console.log("response: " + JSON.stringify(res));
-        if (res.status != 200) {
+        if (res.status !== 200) {
           setSnackMsg({
             message: JSON.stringify(res.message),
             msgColor: "red",
@@ -121,11 +123,12 @@ const Login = () => {
       const isValid = validateForm();
 
       if (isValid) {
+        login()
       }
 
       setIsSubmitting(false);
     }
-  }, [isSubmitting, formData]);
+  },[isSubmitting, formData]);
 
   return (
     <Container maxWidth="sm">
@@ -169,7 +172,7 @@ const Login = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            onClick={() => login()}
+            onClick={() => handleEvent()}
           >
             Sign In
           </Button>

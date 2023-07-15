@@ -58,13 +58,15 @@ const RegistrationForm = () => {
     </div>
   );
 
+  const handleEvent = (event) => {
+    setIsSubmitting(true)
+}
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     await Post_All("/api/user/register", formData)
     .then((res) => {
       console.log("response: " + JSON.stringify(res));
-      if(res.status !=200){
+      if(res.status !== 200){
         setSnackMsg({message:JSON.stringify(res.message),msgColor:"red"});
         setOpen(true);
       }else{
@@ -116,9 +118,7 @@ const RegistrationForm = () => {
       const isValid = validateForm();
 
       if (isValid) {
-        // handleSubmit()
-        console.log('Form is valid');
-     
+        handleSubmit()     
       }
 
       setIsSubmitting(false);
@@ -175,7 +175,7 @@ const RegistrationForm = () => {
             error={!!formErrors.password}
             helperText={formErrors.password}
           />
-          <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={()=>handleSubmit()}>
+          <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={()=>handleEvent()}>
             Sign Up
           </Button>
         </Box>

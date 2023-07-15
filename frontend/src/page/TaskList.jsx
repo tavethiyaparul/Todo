@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { DataGrid, GridDeleteIcon } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
-import Skeleton from "@mui/material/Skeleton";
 import {
   Button,
   Container,
   MenuItem,
-  Grid,
+  CircularProgress,
   Snackbar,
   IconButton,
   FormControl,
@@ -18,19 +17,24 @@ import {
 import AddTask from "../components/AddTask";
 import { Delete_All, Get_All } from "../basicfunction/allApiFunction";
 import { Delete, Edit } from "@mui/icons-material";
+
 const TaskList = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [task, setTask] = useState([]);
   const [editId, setEditId] = useState("");
   const [status, setStatus] = useState("");
   const [loader, setLoader] = useState(false);
+  const [sort, setSort] = useState("");
+  const [priority, setPriority] = useState("");
 
   //pagination
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [resultCount, setResultCount] = useState();
+
   //delete referece
   const [refDelete, setRefDelete] = useState(false);
+
   // set snack msg
   const [snackMsg, setSnackMsg] = useState({
     message: "",
@@ -58,16 +62,15 @@ const TaskList = () => {
   );
 
   const columns = [
-    // { field: "id", headerName: "ID", minWidth: 120, flex:0 },
-    { field: "title", headerName: "Title", width: 150 },
-    { field: "description", headerName: "Description", width: 200 },
-    { field: "priority", headerName: "Priority", width: 120 },
-    { field: "status", headerName: "Status", width: 120 },
-    { field: "duedate", headerName: "Due Date", width: 150 },
+    { field: "title", headerName: "Title", width: 200 },
+    { field: "description", headerName: "Description", width: 500 },
+    { field: "priority", headerName: "Priority", width: 180 },
+    { field: "status", headerName: "Status", width: 180 },
+    { field: "duedate", headerName: "Due Date", width: 180 },
     {
       field: "actions",
-      flex: 1,
-      headerName: "Actions",
+      //   flex: 1,
+      headerName: "Edit",
       minWidth: 30,
       type: "number",
       sortable: false,
@@ -78,7 +81,7 @@ const TaskList = () => {
 
     {
       field: "delete",
-      flex: 1,
+      //   flex: 1,
       headerName: "Delete",
       minWidth: 30,
       type: "number",
@@ -89,26 +92,18 @@ const TaskList = () => {
     },
   ];
 
-  const handlePageChange = (params) => {
-    setPage(params.page);
-  };
-
-  const handlePageSizeChange = (params) => {
-    setPage(0);
-    setPageSize(params.pageSize);
-  };
-
   const editTask = (e, params) => {
     e.stopPropagation();
     setEditId(params.id);
     setOpenDialog(true);
   };
+
   const deleteTask = async (e, id) => {
     e.stopPropagation();
     console.log("id", id);
     await Delete_All(`/api/task/${id}`)
       .then((res) => {
-        if (res.status != 200) {
+        if (res.status !== 200) {
           setSnackMsg({
             message: JSON.stringify(res?.message),
             msgColor: "red",
@@ -134,11 +129,20 @@ const TaskList = () => {
     if (status) {
       addQuery = addQuery + `&status=${status}`;
     }
+
+    if (sort) {
+      addQuery = addQuery + `&sortkey=duedate&sortorder=${sort}`;
+    }
+
+    if (priority) {
+      addQuery = addQuery + `&sortkey=priority&sortorder=${priority}`;
+    }
+
     await Get_All(`/api/task?page=${page}&resultPerPage=${pageSize}${addQuery}`)
       .then((res) => {
         // console.log("response: " + JSON.stringify(res));
         setLoader(false);
-        if (res.status != 200) {
+        if (res.status !== 200) {
           setSnackMsg({
             message: JSON.stringify(res?.message),
             msgColor: "red",
@@ -155,148 +159,192 @@ const TaskList = () => {
       });
   };
 
-  const handleSortModelChange = async (sortModel) => {
-    // Call the API to fetch sorted data based on sortModel
-    // Pass the sort model to your API endpoint to perform server-side sorting
-
-    // Example API call
-    await Get_All(
-      `/api/task?sortkey=${sortModel[0]?.field}&sortorder=${sortModel[0]?.sort}`
-    )
-      .then((data) => {
-        setTask(data.task);
-        // Set the sorted data in your component state or update your data source
-      })
-      .catch((error) => {
-        // Handle error
-      });
-  };
-
   const rows = [];
   task &&
     task.length > 0 &&
     task.map((item) =>
       rows.push({
         id: item?._id,
-        title: item?.title ?? "",
-        description: item?.description ?? "",
+        title: item?.title?.charAt(0).toUpperCase() + item?.title?.slice(1) ?? "",
+        description: item?.description?.charAt(0).toUpperCase() + item?.description?.slice(1) ?? "",
         priority:
           item?.priority === 1
-            ? "high"
+            ? "High"
             : item?.priority === 2
-            ? "medium"
+            ? "Medium"
             : item?.priority === 3
-            ? "low"
+            ? "Low"
             : "",
-        status: item?.status ?? "",
+        status: item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1) ?? "",
         duedate: new Date(item?.duedate).toLocaleDateString(),
       })
     );
 
   useEffect(() => {
-    getUsertask();
-  }, [openDialog, refDelete, status]);
+    getUsertask()
+  },[page,pageSize,openDialog, refDelete, status, sort,priority]);
 
   return (
     <>
       <Container maxWidth="lg  ">
-        {loader ? (
-          <Box>
-            <Skeleton />
-            <Skeleton animation="wave" />
-            <Skeleton animation={true} />
-          </Box>
-        ) : (
-          <>
-            <Box
-              sx={{
-                marginTop: 5,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h4" component="h1">
-                ToDo List
-              </Typography>
-              <Box>
-                <Button
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                  onClick={() => setOpenDialog(true)}
-                >
-                  Add Task
-                </Button>
-                <FormControl
-                  sx={{ mt: 3, mb: 2, ml: 2, minWidth: 120 }}
-                  size="small"
-                >
-                  <InputLabel id="Status">Status</InputLabel>
-                  <Select
-                    labelId="Status"
-                    label="Status"
-                    name="status"
-                    value={status}
-                    onChange={(e) => {
-                      setStatus(e.target.value);
-                    }}
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="in progress">In Progress</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-              <div style={{ height: 450, width: "100%" }}>
-                <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  onSortMode={handleSortModelChange}
-                  pagination
-                  page={page}
-                  pageSize={pageSize}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                  rowCount={resultCount ?? 0}
-                  // getRowHeight={() => "auto"}
-                  // rowHeight={80}
-                />
-              </div>
-              <div>
-                {openDialog && (
-                  <AddTask
-                    modalClose={() => {
-                      setOpenDialog(false);
-                    }}
-                    modalaction={() => {
-                      setOpenDialog(false);
-                    }}
-                    title="Add Task"
-                    id={editId ? editId : ""}
-                  />
-                )}
-              </div>
-              <div>
-                <Snackbar
-                  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                  open={open}
-                  autoHideDuration={6000}
-                  onClose={handleClose}
-                  ContentProps={{
-                    sx: {
-                      background: `${snackMsg.msgColor}`,
-                    },
+        <>
+          <Box
+            sx={{
+              marginTop: 5,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h4" component="h1">
+              ToDo List
+            </Typography>
+            <Box>
+              <Button
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={() => {
+                  setOpenDialog(true);
+                  setEditId("");
+                }}
+              >
+                Add Task
+              </Button>
+              <FormControl
+                sx={{ mt: 3, mb: 2, ml: 2, minWidth: 120 }}
+                size="small"
+              >
+                <InputLabel id="Status">Status</InputLabel>
+                <Select
+                  labelId="Status"
+                  label="Status"
+                  name="status"
+                  value={status}
+                  onChange={(e) => {
+                    setStatus(e.target.value);
                   }}
-                  message={snackMsg.message}
-                  action={action}
+                >
+                  <MenuItem value="">
+                    <em>All</em>
+                  </MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
+                  <MenuItem value="in progress">In Progress</MenuItem>
+                  <MenuItem value="completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl
+                sx={{ mt: 3, mb: 2, ml: 2, minWidth: 120 }}
+                size="small"
+              >
+                <InputLabel id="Due Date">Due Date</InputLabel>
+                <Select
+                  labelId="Due Date"
+                  label="Due Date"
+                  name="sort"
+                  value={sort}
+                  onChange={(e) => {
+                    setPriority("")
+                    setPage(1)
+                    setSort(e.target.value);
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="asc">Ascending</MenuItem>
+                  <MenuItem value="desc">Descending</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl
+                sx={{ mt: 3, mb: 2, ml: 2, minWidth: 120 }}
+                size="small"
+              >
+                <InputLabel id="Priority">Priority</InputLabel>
+                <Select
+                  labelId="Priority"
+                  label="Priority"
+                  name="priority"
+                  value={priority}
+                  onChange={(e) => {
+                    setSort("")
+                    setPage(1)
+                    setPriority(e.target.value);
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="asc">Ascending</MenuItem>
+                  <MenuItem value="desc">Descending</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            {loader ? (
+              <Box
+                style={{
+                  height: "50vh",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+
+             
+              <div style={{ height: 450, width: "100%" }}>
+              <DataGrid	
+                  rows={rows}	
+                  columns={columns}	
+                  pagination	
+                  rowsPerPageOptions={[]}	
+                  page={page == 0 ? 0: page - 1}	
+                  paginationMode="server"	
+                  pageSize={pageSize}	
+                  onPageChange={(newPage) => {	
+                    setPage(newPage + 1);	
+                  }}	
+                  onPageSizeChange={(newPageSize) =>	
+                    setPageSize(newPageSize)	
+                  }	
+                  disableColumnMenu={true}	
+                  hideFooterSelectedRowCount={true}	
+                
+                  rowCount={resultCount ?? 0}	
+              
                 />
               </div>
-            </Box>
-          </>
-        )}
+            )}
+          </Box>
+          <div>
+            {openDialog && (
+              <AddTask
+                modalClose={() => {
+                  setOpenDialog(false);
+                }}
+                title="Add Task"
+                id={editId ? editId : ""}
+              />
+            )}
+          </div>
+          <div>
+            <Snackbar
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              open={open}
+              autoHideDuration={6000}
+              onClose={handleClose}
+              ContentProps={{
+                sx: {
+                  background: `${snackMsg.msgColor}`,
+                },
+              }}
+              message={snackMsg.message}
+              action={action}
+            />
+          </div>
+        </>
       </Container>
     </>
   );
