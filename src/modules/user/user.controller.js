@@ -10,15 +10,15 @@ export const register = async (req, res, next) => {
     //     width:150,
     //     crop:"scale"
     // });
-   
+
     const { name, email, password } = req.body;
 
-    if(!name || !email || !password) {
-        return res.json(
-            responses.DATA_NOT_FOUND({
-                success:false,
-            })
-          );
+    if (!name || !email || !password) {
+      return res.json(
+        responses.DATA_NOT_FOUND({
+          success: false,
+        })
+      );
     }
 
     const user = await User.create({
@@ -33,28 +33,27 @@ export const register = async (req, res, next) => {
 
     sendToken(user, 201, res);
   } catch (error) {
-
     if (error instanceof mongoose.Error.ValidationError) {
-         return res.json(
-            responses.BAD_REQUEST({
-                success:false,
-                message:error.message
-            })
-          );
-      } else {
-        if (error.code == 11000) {
-            return res.json(
-                responses.BAD_REQUEST({
-                    success:false,
-                    message:"Already exist this email id"
-                })
-              );
-        }
-        console.error("Error register:", error);
-        return res.status(500).json(responses.SERVER_ERROR());
-   }
+      return res.json(
+        responses.BAD_REQUEST({
+          success: false,
+          message: error.message,
+        })
+      );
+    } else {
+      if (error.code == 11000) {
+        return res.json(
+          responses.BAD_REQUEST({
+            success: false,
+            message: "Already exist this email id",
+          })
+        );
+      }
+      console.error("Error register:", error);
+      return res.status(500).json(responses.SERVER_ERROR());
+    }
+  }
 };
-}
 
 export const login = async (req, res, next) => {
   try {
@@ -63,7 +62,7 @@ export const login = async (req, res, next) => {
     if (!email || !password) {
       return res.json(
         responses.BAD_REQUEST({
-            success:false,
+          success: false,
           message: "Please Enter email & password",
         })
       );
@@ -74,7 +73,7 @@ export const login = async (req, res, next) => {
     if (!user) {
       return res.json(
         responses.BAD_REQUEST({
-            success:false,
+          success: false,
           message: "Invalid email & password",
         })
       );
@@ -85,7 +84,7 @@ export const login = async (req, res, next) => {
     if (!ismatched) {
       return res.json(
         responses.BAD_REQUEST({
-            success:false,
+          success: false,
           message: "Invalid email & password",
         })
       );
@@ -93,17 +92,17 @@ export const login = async (req, res, next) => {
     sendToken(user, 200, res);
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
-        // Handle validation error
-        return res.json(
-            responses.BAD_REQUEST({
-                success:false,
-                message:error.message
-            })
-          );
-      } else {
-        console.error("Error creating Location:", error);
-        return res.status(500).json(responses.SERVER_ERROR());
-      }
+      // Handle validation error
+      return res.json(
+        responses.BAD_REQUEST({
+          success: false,
+          message: error.message,
+        })
+      );
+    } else {
+      console.error("Error creating Location:", error);
+      return res.status(500).json(responses.SERVER_ERROR());
+    }
   }
 };
 

@@ -1,11 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
   Container,
   TextField,
-  Typography,
   FormControl,
   Select,
   MenuItem,
@@ -14,172 +12,187 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '@mui/material';
-import { Post_All } from '../basicfunction/allApiFunction';
-
+} from "@mui/material";
+import { Get_All, Post_All } from "../basicfunction/allApiFunction";
 
 const AddTask = (props) => {
-    console.log("props", props);
-    const [open, setOpen] = useState(true);
-    const [tasks, setTasks] = useState([]);
-  console.log("task,", tasks)
-    const [formData, setFormData] = useState({
-        id: '',
-        title: '',
-        description: '',
-        dueDate: '',
-        priority: '',
-        status: '',
-      });
-      const handleChange = (event) => {
-        setFormData({
-          ...formData,
-          [event.target.name]: event.target.value,
-        });
-      }; 
-      const handleSubmit = async() => {
-        props.modalaction()
-        if (formData.id) {
-          // Update existing task
-          const updatedTasks = tasks.map((task) =>
-            task.id === formData.id ? formData : task
-          );
-          setTasks(updatedTasks);
-          // update API call
+  console.log("props", props);
+  const [open, setOpen] = useState(true);
+  const [tasks, setTasks] = useState([]);
+
+  const [formData, setFormData] = useState({
+    id: props.id ? props.id : "",
+    title: "",
+    description: "",
+    duedate: "",
+    priority: "",
+    status: "",
+  });
+
+  const handleChange = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const handleSubmit = async () => {
+    props.modalaction();
+    console.log("from data", formData);
+    await Post_All("/api/task", formData)
+      .then((res) => {
+        console.log("response: " + JSON.stringify(res));
+        if (res.status != 200) {
+          // setSnackMsg({message:JSON.stringify(res.message),msgColor:"red"});
+          // setOpen(true);
         } else {
-            console.log("from data",formData)
-            await Post_All("http://localhost:8000/api/task", formData)
-            .then((res) => {
-              console.log("response: " + JSON.stringify(res));
-              if(res.status !=200){
-                // setSnackMsg({message:JSON.stringify(res.message),msgColor:"red"});
-                // setOpen(true);
-              }else{
-                props.modalClose()
-                // setSnackMsg({message:JSON.stringify(res.message),msgColor:"green"});
-                // setOpen(true);
-              }
-            })
-            .catch((error) => {
-              console.log("error: " + error);
-            });
-
-        //   setTasks([...tasks, newTask]);
-          // add API call
+          props.modalClose();
+          // setSnackMsg({message:JSON.stringify(res.message),msgColor:"green"});
+          // setOpen(true);
         }
-    
-        setFormData({
-          id: '',
-          title: '',
-          description: '',
-          dueDate: '',
-          priority: '',
-          status: '',
-        });
-      };
+      })
+      .catch((error) => {
+        console.log("error: " + error);
+      });
 
-        // Function to handle dialog open
-  const handleOpen = () => {
-    setOpen(true);
+    setFormData({
+      id: "",
+      title: "",
+      description: "",
+      duedate: "",
+      priority: "",
+      status: "",
+    });
   };
 
   // Function to handle dialog close
   const handleClose = () => {
     props.modalClose();
   };
+
+  const getTaskId = async () => {
+    if (props.id) {
+      await Get_All(`/api/task/${props.id}`)
+        .then((res) => {
+          // console.log("response: " + JSON.stringify(res));
+          if (res.status != 200) {
+            // setSnackMsg({
+            //   message: JSON.stringify(res?.message),
+            //   msgColor: "red",
+            // });
+            // setOpen(true);
+          } else {
+            setFormData({
+              id: props?.id ?? "",
+              title: res?.task?.title ?? "",
+              description: res?.task?.description ?? "",
+              duedate:
+                new Date(res?.task?.duedate).toISOString().split("T")[0] ?? "",
+              priority: res?.task?.priority ?? "",
+              status: res?.task?.status ?? "",
+            });
+          }
+        })
+        .catch((error) => {
+          console.log("error: " + error);
+        });
+    }
+  };
+
+  useEffect(() => {
+    getTaskId();
+  }, []);
+
   return (
     <>
-    <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>{props.title}</DialogTitle>
-            <DialogContent>
-         <Container maxWidth="md">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        {/* create */}
-        <Typography variant="h4" component="h1">
-          Task Manager
-        </Typography>
-        <Box component="form" sx={{ mt: 2 }} onSubmit={handleSubmit}>
-          <TextField
-            required
-            fullWidth
-            label="Title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-          /><br /><br />
-          <TextField
-            required
-            fullWidth
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          /><br /><br />
-          <TextField
-            required
-            fullWidth
-            label="Due Date"
-            name="dueDate"
-            type="date"
-            value={formData.dueDate}
-            onChange={handleChange}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          /><br /><br />
-          <FormControl required fullWidth>
-            <InputLabel id="Priority">Priority</InputLabel>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{props.title}</DialogTitle>
+        <DialogContent>
+          <Container maxWidth="md">
+            {/* create */}
+            <Box component="form" sx={{ mt: 2 }} onSubmit={handleSubmit}>
+              <TextField
+                required
+                autoFocus
+                fullWidth
+                label="Title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+              />
+              <br />
+              <br />
+              <TextField
+                required
+                fullWidth
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+              />
+              <br />
+              <br />
+              <TextField
+                required
+                fullWidth
+                label="Due Date"
+                name="duedate"
+                type="date"
+                value={formData.duedate}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  min: new Date().toISOString().split("T")[0],
+                }}
+              />
+              <br />
+              <br />
+              <FormControl required fullWidth>
+                <InputLabel id="Priority">Priority</InputLabel>
 
-            <Select
-              labelId="Priority"
-
-              label="Priority"
-
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-            >
-              <MenuItem value="Low">Low</MenuItem>
-              <MenuItem value="Medium">Medium</MenuItem>
-              <MenuItem value="High">High</MenuItem>
-            </Select>
-          </FormControl>
-          <br /><br />
-          <FormControl required fullWidth>
-            <InputLabel id="Status">Status</InputLabel>
-            <Select
-              labelId="Status"
-
-              label="Status"
-
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="in progress">In Progress</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-            </Select>
-          </FormControl>
-          <br /><br />
-        </Box>
-        </Box>
-        </Container>
+                <Select
+                  labelId="Priority"
+                  label="Priority"
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="3">Low</MenuItem>
+                  <MenuItem value="2">Medium</MenuItem>
+                  <MenuItem value="1">High</MenuItem>
+                </Select>
+              </FormControl>
+              <br />
+              <br />
+              <FormControl required fullWidth>
+                <InputLabel id="Status">Status</InputLabel>
+                <Select
+                  labelId="Status"
+                  label="Status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="pending">Pending</MenuItem>
+                  <MenuItem value="in progress">In Progress</MenuItem>
+                  <MenuItem value="completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+              <br />
+              <br />
+            </Box>
+          </Container>
         </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose}>Cancel</Button>
-              <Button  onClick={handleSubmit}>{formData.id ? 'Edit' : 'Save'}</Button>
-            </DialogActions>
-          </Dialog>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSubmit}>
+            {formData.id ? "Edit" : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
-  )
-}
+  );
+};
 
-export default AddTask
+export default AddTask;

@@ -2,8 +2,8 @@ import { BrowserRouter, Route,Routes } from "react-router-dom";
 import { React, useEffect, useState } from "react";
 import Login from "./page/Login";
 import RegistrationForm from "./page/RegistrationFrom";
-import ToDoList from "./page/ToDoList";
-import AddTask from "./components/AddTask";
+import TaskList from "./page/TaskList";
+import Navbar from "./components/Navbar";
 
 
 // import { useNavigate ,Link} from "react-router-dom";
@@ -18,14 +18,13 @@ const Router = () => {
   // }
   return (
     <>
+   
       <BrowserRouter>
+      <Navbar/>
       <Routes>
-        {/* <Route element={<PersistentDrawer />}> */}
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<RegistrationForm />} />
-          <Route path="/task" element={<ToDoList />} />
-          <Route path="/add" element={<AddTask />} />
-        {/* </Route> */}
+          <Route path="/task" element={<TaskList />} />
         </Routes>
       </BrowserRouter>
     </>

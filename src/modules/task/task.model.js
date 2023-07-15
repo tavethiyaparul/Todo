@@ -18,12 +18,12 @@ const taskSchema = mongoose.Schema(
       message: "description validation failed",
     },
     duedate: {
-      type: Number,
+      type: Date,
       message: "dueDate validation failed",
     },
     priority: {
-      type: String,
-      enum: ["low", "medium", "high"],
+      type: Number,
+      enum: [3, 2, 1],
     },
     status: {
       type: String,

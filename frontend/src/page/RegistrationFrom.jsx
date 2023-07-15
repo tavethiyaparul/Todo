@@ -61,7 +61,7 @@ const RegistrationForm = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await Post_All("http://localhost:8000/api/user/register", formData)
+    await Post_All("/api/user/register", formData)
     .then((res) => {
       console.log("response: " + JSON.stringify(res));
       if(res.status !=200){

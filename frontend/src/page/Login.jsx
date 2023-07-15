@@ -10,18 +10,18 @@ import {
 } from "@mui/material";
 import { Post_All } from "../basicfunction/allApiFunction";
 import CloseIcon from "@mui/icons-material/Close";
-import { useNavigate ,Link} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const [formErrors, setFormErrors] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,10 +31,10 @@ const Login = () => {
       [event.target.name]: event.target.value,
     });
 
-      // Clear the error when a value is entered
+    // Clear the error when a value is entered
     setFormErrors({
       ...formErrors,
-      [event.target.name]: '',
+      [event.target.name]: "",
     });
   };
   // set snack msg
@@ -51,7 +51,7 @@ const Login = () => {
     }
     setOpen(false);
   };
-  
+
   const action = (
     <div>
       <IconButton
@@ -65,63 +65,64 @@ const Login = () => {
     </div>
   );
 
- 
   const login = async () => {
     setIsSubmitting(true);
-    await Post_All("http://localhost:8000/api/user/login", formData)
+    await Post_All("/api/user/login", formData)
       .then((res) => {
         console.log("response: " + JSON.stringify(res));
-      if(res.status !=200){
-        setSnackMsg({message:JSON.stringify(res.message),msgColor:"red"});
-        setOpen(true);
-      }else{
-        setSnackMsg({message:JSON.stringify(res.message),msgColor:"green"});
-        setOpen(true);
-        navigate ("/task");
-      }
+        if (res.status != 200) {
+          setSnackMsg({
+            message: JSON.stringify(res.message),
+            msgColor: "red",
+          });
+          setOpen(true);
+        } else {
+          setSnackMsg({
+            message: JSON.stringify(res.message),
+            msgColor: "green",
+          });
+          setOpen(true);
+          navigate("/task");
+        }
       })
       .catch((error) => {
         console.log("error: " + error);
       });
   };
 
- 
-
-
   useEffect(() => {
     const validateForm = () => {
-        let errors = {};
-        let isValid = true;
-     
-        // Email validation
-        if (!formData.email.trim()) {
-          errors.email = 'Email is required';
-          isValid = false;
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-          errors.email = 'Email is invalid';
-          isValid = false;
-        }
-    
-        // Password validation
-        if (!formData.password.trim()) {
-          errors.password = 'Password is required';
-          isValid = false;
-        }else if (formData.password.trim().length < 6){
-          errors.password = 'Password is greater than 6 characters';
-          isValid = false;
-        }
-    
-        setFormErrors(errors);
-        return isValid;
-      };
+      let errors = {};
+      let isValid = true;
+
+      // Email validation
+      if (!formData.email.trim()) {
+        errors.email = "Email is required";
+        isValid = false;
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        errors.email = "Email is invalid";
+        isValid = false;
+      }
+
+      // Password validation
+      if (!formData.password.trim()) {
+        errors.password = "Password is required";
+        isValid = false;
+      } else if (formData.password.trim().length < 6) {
+        errors.password = "Password is greater than 6 characters";
+        isValid = false;
+      }
+
+      setFormErrors(errors);
+      return isValid;
+    };
 
     if (isSubmitting) {
       const isValid = validateForm();
-  
-      if (isValid) {
 
+      if (isValid) {
       }
-  
+
       setIsSubmitting(false);
     }
   }, [isSubmitting, formData]);
@@ -150,7 +151,7 @@ const Login = () => {
             autoFocus
             onChange={handleChange}
             error={!!formErrors.email}
-              helperText={formErrors.email}
+            helperText={formErrors.email}
           />
           <TextField
             margin="normal"
@@ -162,7 +163,7 @@ const Login = () => {
             type="password"
             onChange={handleChange}
             error={!!formErrors.password}
-              helperText={formErrors.password}
+            helperText={formErrors.password}
           />
           <Button
             fullWidth
@@ -172,7 +173,6 @@ const Login = () => {
           >
             Sign In
           </Button>
-
           Don't have an account?<Link to="/signup">Sing Up</Link>
         </Box>
         <div>
@@ -182,11 +182,11 @@ const Login = () => {
             autoHideDuration={6000}
             onClose={handleClose}
             ContentProps={{
-          sx: {
-            background: `${snackMsg.msgColor}`,
-          },
-        }}
-        message={snackMsg.message}
+              sx: {
+                background: `${snackMsg.msgColor}`,
+              },
+            }}
+            message={snackMsg.message}
             action={action}
           />
         </div>

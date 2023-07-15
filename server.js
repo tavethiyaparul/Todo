@@ -3,25 +3,32 @@ import cors from "cors";
 import responses from "./src/constants/responses.js";
 import apiRouter from "./src/routes.js";
 import cookieParser from "cookie-parser";
+import path, { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 export async function createServer({ isProd }) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
   const app = express();
-
-
   app.use(express.json());
   app.use(cookieParser());
-  app.use(cors({ origin: "*" }))
-  app.use(express.urlencoded({extended:true}))
+  app.use(cors({ origin: "*" }));
 
-  // return path
-  let path;
+  let pathUrl;
   app.use((req, res, next) => {
-    path = `Route Path ${req.method} = http://${req.hostname}:${process.env.PORT}${req.path} `;
-    console.log(path);
+    pathUrl = `Route Path ${req.method} = http://${req.hostname}:${process.env.PORT}${req.path} `;
+    console.log(pathUrl);
     next(); // calling next middleware function or handler
   });
 
   app.use("/api", apiRouter);
+
+  app.use(express.static(path.join(__dirname, "frontend/build")));
+
+  app.use("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
+  });
 
   app.use((error, req, res, next) => {
     console.log("Error: ", error);
