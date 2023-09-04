@@ -1,0 +1,40 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 10  # Choose the Node.js version you need
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build and test
+      run: |
+        npm run build
+      
+
+    - name: Deploy to Server
+      if: success()
+      run: |
+      ssh -i ${{ secrets.SSH_PRIVATE_KEY }} root@167.86.109.223 'bash -s' << EOF
+    cd /var/www/public_html/demo_project/Todo
+    git pull origin main
+    npm install
+    npm run build
+    # Restart your Node.js server or any other necessary steps
+    pm2 restart your-app
+    EOF
+        # Add deployment steps here
