@@ -9,7 +9,7 @@ jobs:
     
     steps:
       - name: Print Hello World
-       run: echo helloo world asdads
+        run: echo helloo world 
 
       - name: Deploying using ssh
         uses: tavethiyaparul/Todo/ssh-action@main
