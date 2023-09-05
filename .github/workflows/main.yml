@@ -6,18 +6,17 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    retries: 3 # You can adjust the number of retries
-    continue-on-error: true
+    
     steps:
       - name: Print Hello World
-        run: echo helloo world asdads
+       run: echo helloo world asdads
 
       - name: Deploying using ssh
         uses: tavethiyaparul/Todo/ssh-action@main
         with:
-          host: 167.86.109.223
-          username: root
-          password: 77NHg9e5YT9Jpmsc3
+          host:  ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           script: |
             cd /var/www/public_html/demo_project/Todo/
