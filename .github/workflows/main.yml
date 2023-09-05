@@ -1,42 +1,26 @@
-name: CI/CD Pipeline
-
+name: Build and Deploy
 on:
   push:
     branches:
       - main
-
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Print Hello World
+        run: echo helloo world asdads
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: 10  # Choose the Node.js version you need
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build and test
-      run: |
-        npm run build
-      
-        env:
-            CI:true
-            
-    - name: Deploy to Server
-      if: success()
-      run: |
-      ssh -i ${{ secrets.SSH_PRIVATE_KEY }} root@167.86.109.223 'bash -s' << EOF
-    cd /var/www/public_html/demo_project/Todo
-    git pull origin main
-    npm install
-    npm run build
-    # Restart your Node.js server or any other necessary steps
-    pm2 restart your-app
-    EOF
-        # Add deployment steps here
+      - name: Deploying using ssh
+        uses: tavethiyaparul/ssh-action@main
+        with:
+          host: 167.86.109.223
+          username: root
+          password: 77NHg9e5YT9Jpmsc3
+          port: 22
+          script: |
+            cd /var/www/public_html/demo_project/Todo/
+            sudo rm -rf node_modules
+            sudo git pull
+            sudo npm install
+            pm2 list
+            pm2 restart 1
