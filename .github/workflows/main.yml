@@ -25,7 +25,9 @@ jobs:
       run: |
         npm run build
       
-
+        env:
+            CI:true
+            
     - name: Deploy to Server
       if: success()
       run: |
