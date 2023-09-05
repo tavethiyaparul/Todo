@@ -6,6 +6,8 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    retries: 3 # You can adjust the number of retries
+    continue-on-error: true
     steps:
       - name: Print Hello World
         run: echo helloo world asdads
@@ -21,6 +23,6 @@ jobs:
             cd /var/www/public_html/demo_project/Todo/
             sudo rm -rf node_modules
             sudo git pull
-            sudo npm install
+            sudo yarn install
             pm2 list
             pm2 restart 1
