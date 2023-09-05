@@ -7,11 +7,13 @@ const isProd = process.env.NODE_ENV === "production";
 const PORT = process.env.PORT || 8081;
 
 // Handling Uncaught Exception
-process.on("uncaughtException", (err) => {
-  console.log(`Error: ${err.message}`);
-  console.log(`Shutting down the server due to Uncaught Exception`);
-  process.exit(1);
-});
+// process.on("uncaughtException", (err) => {
+//   console.log(`Error: ${err.message}`);
+//   console.log(`Shutting down the server due to Uncaught Exception`);
+//   process.exit(1);
+// });
+
+console.log("welcome home")
 
 connectDB().then(() => {
   createServer({ isProd }).then(({ app }) => {
