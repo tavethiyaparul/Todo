@@ -11,7 +11,7 @@ jobs:
         run: echo helloo world asdads
 
       - name: Deploying using ssh
-        uses: tavethiyaparul/ssh-action@main
+        uses: tavethiyaparul/Todo/ssh-action@main
         with:
           host: 167.86.109.223
           username: root
